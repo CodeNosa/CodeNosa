@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* Effet néon */
+.neon-glow {
+  box-shadow: 0 0 10px rgba(15, 185, 177, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+.neon-glow:hover {
+  box-shadow: 0 0 20px rgba(15, 185, 177, 0.8);
+}
