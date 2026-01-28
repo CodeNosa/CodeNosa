@@ -1,5 +1,5 @@
 // src/components/Header.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   FaWhatsapp,
@@ -8,15 +8,39 @@ import {
   FaEnvelope,
   FaGithub,
   FaLinkedin,
+  FaBars,
+  FaTimes,
+  FaChevronRight
 } from "react-icons/fa";
 import ThemeToggle from "./ThemeToggle";
 import LanguageSwitcher from "./LanguageSwitcher";
-import logo from "../assets/logo.jpg";
+import logo from "../assets/logo.jpeg";
 
 const translations = {
-  fr: { home: "Accueil", portfolio: "Portfolio", contact: "Contact", about: "À propos" },
-  en: { home: "Home", portfolio: "Portfolio", contact: "Contact", about: "About" },
-  ar: { home: "الرئيسية", portfolio: "أعمالي", contact: "اتصل بنا", about: "من نحن" },
+  fr: { 
+    home: "Accueil", 
+    portfolio: "Portfolio", 
+    contact: "Contact", 
+    about: "À propos", 
+    services: "Services",
+    testimonials: "Avis"
+  },
+  en: { 
+    home: "Home", 
+    portfolio: "Portfolio", 
+    contact: "Contact", 
+    about: "About", 
+    services: "Services",
+    testimonials: "Reviews"
+  },
+  ar: { 
+    home: "الرئيسية", 
+    portfolio: "أعمالي", 
+    contact: "اتصل بنا", 
+    about: "من نحن", 
+    services: "خدماتنا",
+    testimonials: "آراء"
+  },
 };
 
 export default function Header({ lang, setLang, darkMode, setDarkMode }) {
@@ -24,178 +48,308 @@ export default function Header({ lang, setLang, darkMode, setDarkMode }) {
 
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [logoBig, setLogoBig] = useState(false);
-  const logoRef = useRef(null);
+  const [activeNav, setActiveNav] = useState("home");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 20);
+      
+      // Mise à jour de la navigation active
+      const sections = ['home', 'services', 'portfolio', 'about', 'testimonials', 'contact'];
+      const currentSection = sections.find(section => {
+        const element = document.getElementById(section);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          return rect.top <= 100 && rect.bottom >= 100;
+        }
+        return false;
+      });
+      
+      if (currentSection) {
+        setActiveNav(currentSection);
+      }
+    };
+    
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  const handleLogoClick = () => setLogoBig(!logoBig);
-
   const navItems = [
-    { name: t.home, href: "#home" },
-    { name: t.portfolio, href: "#portfolio" },
-    { name: t.about, href: "#about" },
-    { name: t.contact, href: "#contact" },
+    { id: "home", name: t.home, href: "#home", icon: "🏠" },
+    { id: "services", name: t.services, href: "#services", icon: "⚡" },
+    { id: "portfolio", name: t.portfolio, href: "#portfolio", icon: "🎨" },
+    { id: "about", name: t.about, href: "#about", icon: "👥" },
+    { id: "testimonials", name: t.testimonials, href: "#testimonials", icon: "⭐" },
+    { id: "contact", name: t.contact, href: "#contact", icon: "📞" },
   ];
 
   const socialIcons = [
-    { icon: <FaLinkedin />, href: "https://linkedin.com" },
-    { icon: <FaGithub />, href: "https://github.com" },
-    { icon: <FaInstagram />, href: "https://instagram.com" },
-    { icon: <FaWhatsapp />, href: "https://wa.me/21656208652" },
-    { icon: <FaFacebookMessenger />, href: "https://m.me/CodeNosa.fr" },
-    { icon: <FaEnvelope />, href: "mailto:CodeNosa@gmail.com" },
+    { 
+      icon: <FaLinkedin />, 
+      href: "https://linkedin.com/in/CodeNosa",
+      label: "LinkedIn"
+    },
+    { 
+      icon: <FaGithub />, 
+      href: "https://github.com/CodeNosa",
+      label: "GitHub"
+    },
+    { 
+      icon: <FaInstagram />, 
+      href: "https://instagram.com/CodeNosa",
+      label: "Instagram"
+    },
+    { 
+      icon: <FaWhatsapp />, 
+      href: "https://wa.me/21656208652",
+      label: "WhatsApp"
+    },
+    { 
+      icon: <FaEnvelope />, 
+      href: "mailto:CodeNosa@gmail.com",
+      label: "Email"
+    },
+    { 
+      icon: <FaFacebookMessenger />, 
+      href: "https://m.me/CodeNosa.fr",
+      label: "Messenger"
+    },
   ];
+
+  const handleNavClick = (id, href) => {
+    setActiveNav(id);
+    setOpen(false);
+    // Scroll vers la section
+    const element = document.querySelector(href);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
 
   return (
     <>
       <header
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-white/90 dark:bg-night/90 backdrop-blur-xl shadow-[0_4px_20px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_20px_-2px_rgba(0,0,0,0.2)]"
+            ? "bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl shadow-lg border-b border-gray-100 dark:border-gray-800"
             : "bg-transparent"
         }`}
       >
         <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          {/* Logo animé */}
-          <motion.div
-            onClick={handleLogoClick}
-            className="flex items-center gap-3 cursor-pointer group relative"
+          {/* Logo */}
+          <motion.a
+            href="#home"
+            onClick={() => handleNavClick("home", "#home")}
+            className="flex items-center gap-3 cursor-pointer group"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <motion.img
-              ref={logoRef}
+            <img
               src={logo}
               alt="CodeNosa Logo"
-              className="rounded-xl object-cover cursor-pointer"
-              animate={{ width: logoBig ? 160 : 40, height: logoBig ? 160 : 40 }}
-              transition={{ type: "spring", stiffness: 300, damping: 20 }}
+              className="w-10 h-10 rounded-xl object-cover border border-gray-200 dark:border-gray-700"
             />
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tracking-tight">
-              CodeNosa
-            </span>
-            {logoBig && (
-              <motion.span
-                className="absolute -top-3 -right-3 w-4 h-4 bg-accent rounded-full shadow-lg"
-                layoutId="logo-badge"
-                animate={{ scale: [0, 1.2, 1] }}
-              />
-            )}
-          </motion.div>
+            <div className="flex flex-col">
+              <span className="text-xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent tracking-tight">
+                CodeNosa
+              </span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                {lang === "fr" ? "Agence Digital" : 
+                 lang === "ar" ? "وكالة رقمية" : 
+                 "Digital Agency"}
+              </span>
+            </div>
+          </motion.a>
 
           {/* Navigation Desktop */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden md:flex items-center gap-2">
             {navItems.map((item) => (
               <a
-                key={item.name}
+                key={item.id}
                 href={item.href}
-                className="relative font-medium text-gray-800 dark:text-gray-200 hover:text-primary dark:hover:text-primary transition-colors duration-300 group"
+                onClick={() => handleNavClick(item.id, item.href)}
+                className={`relative px-4 py-2 font-medium rounded-lg transition-all duration-300 ${
+                  activeNav === item.id
+                    ? "text-primary dark:text-accent bg-primary/5 dark:bg-accent/5"
+                    : "text-gray-700 dark:text-gray-300 hover:text-primary dark:hover:text-accent hover:bg-gray-100 dark:hover:bg-gray-800"
+                }`}
               >
                 {item.name}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:w-full group-hover:opacity-100 transition-all duration-300 ease-out"></span>
+                {activeNav === item.id && (
+                  <motion.div
+                    layoutId="activeIndicator"
+                    className="absolute bottom-0 left-1/4 right-1/4 h-0.5 bg-gradient-to-r from-primary to-accent rounded-full"
+                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                  />
+                )}
               </a>
             ))}
           </nav>
 
           {/* Actions */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <LanguageSwitcher lang={lang} setLang={setLang} />
             <ThemeToggle darkMode={darkMode} setDarkMode={setDarkMode} />
 
             {/* Burger Menu */}
-            <button
+            <motion.button
               onClick={() => setOpen(!open)}
-              className="md:hidden p-2 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="md:hidden p-2.5 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:text-primary dark:hover:text-accent transition-colors"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
               aria-label="Toggle menu"
             >
-              <div
-                className={`w-6 h-0.5 bg-current mb-1.5 transition-all duration-300 ${
-                  open ? "rotate-45 translate-y-1.5" : ""
-                }`}
-              />
-              <div
-                className={`w-6 h-0.5 bg-current transition-all duration-300 ${open ? "opacity-0" : ""}`}
-              />
-              <div
-                className={`w-6 h-0.5 bg-current mt-1.5 transition-all duration-300 ${
-                  open ? "-rotate-45 -translate-y-1.5" : ""
-                }`}
-              />
-            </button>
+              <AnimatePresence mode="wait">
+                {open ? (
+                  <motion.div
+                    key="close"
+                    initial={{ rotate: -90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: 90, opacity: 0 }}
+                  >
+                    <FaTimes className="w-6 h-6" />
+                  </motion.div>
+                ) : (
+                  <motion.div
+                    key="menu"
+                    initial={{ rotate: 90, opacity: 0 }}
+                    animate={{ rotate: 0, opacity: 1 }}
+                    exit={{ rotate: -90, opacity: 0 }}
+                  >
+                    <FaBars className="w-6 h-6" />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.button>
           </div>
         </div>
       </header>
 
-      {/* Overlay mobile */}
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm"
-            onClick={() => setOpen(false)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Mobile Menu */}
       <AnimatePresence>
         {open && (
-          <motion.aside
-            className="fixed top-0 right-0 h-full w-72 z-50 bg-night text-white"
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          >
-            <div className="p-6 flex flex-col h-full">
-              <h2 className="text-2xl font-bold mb-8 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Menu
-              </h2>
-
-              <nav className="flex flex-col gap-3">
-                {navItems.map((item) => (
-                  <motion.a
-                    key={item.name}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className="px-4 py-3 rounded-xl bg-white/5 hover:bg-primary/20 transition-all duration-200 hover:scale-[1.05] active:scale-[1.0]"
-                    whileHover={{ x: 5 }}
-                  >
-                    {item.name}
-                  </motion.a>
-                ))}
-              </nav>
-
-              <div className="mt-auto pt-6 border-t border-white/10">
-                <p className="text-sm text-gray-400 mb-3">Réseaux</p>
-                <div className="flex gap-4 text-xl">
-                  {socialIcons.map((social, idx) => (
-                    <motion.a
-                      key={idx}
-                      href={social.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:scale-125 transition-transform duration-300 text-white"
-                      whileHover={{ rotate: 10 }}
-                      aria-label={`Réseau social ${idx + 1}`}
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
+            
+            <motion.aside
+              initial={{ x: "100%" }}
+              animate={{ x: 0 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 25, stiffness: 200 }}
+              className="fixed top-0 right-0 h-full w-full max-w-sm z-50 bg-white dark:bg-gray-900 shadow-2xl"
+            >
+              <div className="flex flex-col h-full">
+                {/* Header du menu */}
+                <div className="p-6 border-b border-gray-100 dark:border-gray-800">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={logo}
+                        alt="CodeNosa Logo"
+                        className="w-12 h-12 rounded-xl object-cover"
+                      />
+                      <div>
+                        <div className="font-bold text-gray-900 dark:text-white">CodeNosa</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">Digital Agency</div>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setOpen(false)}
+                      className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                     >
-                      {social.icon}
-                    </motion.a>
-                  ))}
+                      <FaTimes className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Navigation */}
+                <div className="flex-1 overflow-y-auto p-6">
+                  <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                    {lang === "fr" ? "Navigation" : 
+                     lang === "ar" ? "التنقل" : 
+                     "Navigation"}
+                  </h3>
+                  
+                  <nav className="space-y-2">
+                    {navItems.map((item) => (
+                      <motion.a
+                        key={item.id}
+                        href={item.href}
+                        onClick={() => handleNavClick(item.id, item.href)}
+                        className={`flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-200 ${
+                          activeNav === item.id
+                            ? "bg-primary/10 text-primary dark:bg-accent/10 dark:text-accent"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+                        }`}
+                        whileTap={{ scale: 0.98 }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-lg">{item.icon}</span>
+                          <span className="font-medium">{item.name}</span>
+                        </div>
+                        <FaChevronRight className="w-4 h-4 text-gray-400" />
+                      </motion.a>
+                    ))}
+                  </nav>
+
+                  {/* Réseaux sociaux */}
+                  <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+                    <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-4">
+                      {lang === "fr" ? "Suivez-nous" : 
+                       lang === "ar" ? "تابعنا" : 
+                       "Follow us"}
+                    </h3>
+                    
+                    <div className="grid grid-cols-3 gap-3">
+                      {socialIcons.slice(0, 6).map((social, idx) => (
+                        <motion.a
+                          key={idx}
+                          href={social.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center justify-center py-3 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-primary hover:text-white transition-all duration-200"
+                          whileHover={{ y: -2 }}
+                          whileTap={{ scale: 0.95 }}
+                          aria-label={social.label}
+                        >
+                          {social.icon}
+                        </motion.a>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer du menu */}
+                <div className="p-6 border-t border-gray-100 dark:border-gray-800">
+                  <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+                    © {new Date().getFullYear()} CodeNosa.
+                    {lang === "fr" ? " Tous droits réservés." : 
+                     lang === "ar" ? " جميع الحقوق محفوظة." : 
+                     " All rights reserved."}
+                  </p>
                 </div>
               </div>
-            </div>
-          </motion.aside>
+            </motion.aside>
+          </>
         )}
       </AnimatePresence>
+
+      {/* Scroll Indicator */}
+      <motion.div
+        className="fixed top-0 left-0 right-0 h-1 z-50"
+        initial={{ scaleX: 0 }}
+        animate={{ scaleX: scrolled ? 1 : 0 }}
+        transition={{ duration: 0.3 }}
+        style={{ transformOrigin: "left" }}
+      >
+        <div className="h-full bg-gradient-to-r from-primary via-accent to-secondary" />
+      </motion.div>
     </>
   );
 }
- 

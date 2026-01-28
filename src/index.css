@@ -10,3 +10,12 @@
 .neon-glow:hover {
   box-shadow: 0 0 20px rgba(15, 185, 177, 0.8);
 }
+.animate-gradient {
+  background-size: 200% 200%;
+}
+
+.transform-gpu {
+  transform: translate3d(0,0,0);
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
