@@ -37,7 +37,6 @@ export default function ContactPage({ lang }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Submit formulaire:", formData); // <-- قبل الإرسال
 
     setLoading(true);
 
