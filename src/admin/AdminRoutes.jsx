@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 
 // Composants
-import ProtectedRoute from "./components/ProtectedRoute";
 import AdminLayout from "./components/AdminLayout";
 import Login from "./Login";
 import Dashboard from "./Dashboard";
@@ -15,24 +14,10 @@ export default function AdminRoutes() {
     <AuthProvider>
       <Routes>
         {/* Route publique - Login */}
-        <Route 
-          path="login" 
-          element={
-            <ProtectedRoute requireAuth={false}>
-              <Login />
-            </ProtectedRoute>
-          } 
-        />
+        <Route path="login" element={<Login />} />
 
-        {/* Routes protégées - Admin */}
-        <Route 
-          path="/" 
-          element={
-            <ProtectedRoute>
-              <AdminLayout />
-            </ProtectedRoute>
-          }
-        >
+        {/* Routes admin sans protection */}
+        <Route path="/" element={<AdminLayout />}>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="portfolio" element={<PortfolioAdmin />} />
@@ -45,4 +30,4 @@ export default function AdminRoutes() {
       </Routes>
     </AuthProvider>
   );
-}
+} 

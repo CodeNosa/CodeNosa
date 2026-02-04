@@ -13,21 +13,10 @@ import {
 export default function Dashboard() {
   const navigate = useNavigate();
 
-  // Vérifier l'authentification
-  useEffect(() => {
-    const authData = localStorage.getItem("adminAuth");
-    if (!authData) {
-      navigate("/admin/login");
-      return;
-    }
-    try {
-      const parsed = JSON.parse(authData);
-      if (Date.now() > parsed.expires) {
-        localStorage.removeItem("adminAuth");
-        navigate("/admin/login");
-      }
-    } catch {
-      navigate("/admin/login");
+ useEffect(() => {
+    const token = localStorage.getItem('adminToken');
+    if (!token) {
+      navigate('/admin/login', { replace: true });
     }
   }, [navigate]);
 

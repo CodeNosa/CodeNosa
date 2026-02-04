@@ -1,8 +1,8 @@
+//C:\Users\henn5\Desktop\CodeNosa-main\src\App.jsx
 import { useState, useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
-import AdminRoutes from './admin/AdminRoutes';
-
+import AdminRoutes from './admin/AdminRoutes.jsx';
 function App() {
   const [lang, setLang] = useState(() => localStorage.getItem('language') || 'fr');
   const [darkMode, setDarkMode] = useState(() => localStorage.getItem('darkMode') === 'true');
@@ -35,7 +35,7 @@ function App() {
         />
 
         {/* Routes admin */}
-        <Route path="/admin/*" element={<AdminRoutes />} />
+<Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
     </div>
   );

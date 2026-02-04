@@ -98,12 +98,9 @@ export function AuthProvider({ children }) {
     }
   };
 
-  const isAuthenticated = () => {
-    if (!user) return false;
-    
-    const now = Date.now();
-    return now < user.expires;
-  };
+ const isAuthenticated = () => {
+  return !!localStorage.getItem('adminToken'); // true إذا موجود، false إذا لا
+};
 
   const getUserInfo = () => {
     if (!user) return null;
