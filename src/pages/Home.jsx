@@ -4,7 +4,6 @@ import Hero from '../components/Hero';
 import Services from '../components/Services';
 import Portfolio from '../components/Portfolio';
 import Testimonials from '../components/Testimonials';
-import ProjectForm from '../components/ProjectForm';
 import Contact from '../components/Contact';
 import AboutPage from '../components/propos';
 import Footer from '../components/Footer';
@@ -20,7 +19,7 @@ export default function Home({ lang, setLang, darkMode, setDarkMode }) {
         <Portfolio lang={lang} />
         <AboutPage lang={lang}/>
         <Testimonials lang={lang} />
-        <ProjectForm lang={lang} />
+      
         <Contact lang={lang} />
       </main>
       <Footer lang={lang} />
