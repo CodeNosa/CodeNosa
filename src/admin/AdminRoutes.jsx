@@ -8,6 +8,7 @@ import Dashboard from "./Dashboard";
 import PortfolioAdmin from "./PortfolioAdmin"; 
 import ClientsAdmin from "./ClientsAdmin";
 import TestimonialsAdmin from "./TestimonialsAdmin";
+import Teams from "./TeamAdmin";
 
 export default function AdminRoutes() {
   return (
@@ -23,6 +24,7 @@ export default function AdminRoutes() {
           <Route path="portfolio" element={<PortfolioAdmin />} />
           <Route path="clients" element={<ClientsAdmin />} />
           <Route path="testimonials" element={<TestimonialsAdmin />} />
+          <Route path="Teams" element={<Teams />} />
         </Route>
 
         {/* Redirection 404 pour admin */}

@@ -114,6 +114,18 @@ export default function AdminNavbarSimple() {
               >
                 Témoignages
               </NavLink>
+              <NavLink
+            to="/admin/Teams"
+            className={({ isActive }) => 
+              `flex-1 text-center px-2 py-2 text-sm font-medium rounded-lg transition-colors ${
+                isActive 
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`
+            }
+          >
+            Teams
+          </NavLink>
             </div>
           </div>
 
@@ -219,7 +231,20 @@ export default function AdminNavbarSimple() {
           >
             Témoignages
           </NavLink>
+          <NavLink
+            to="/admin/Teams"
+            className={({ isActive }) => 
+              `flex-1 text-center px-2 py-2 text-sm font-medium rounded-lg transition-colors ${
+                isActive 
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
+                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+              }`
+            }
+          >
+            Teams
+          </NavLink>
         </div>
+
       </div>
     </header>
   );

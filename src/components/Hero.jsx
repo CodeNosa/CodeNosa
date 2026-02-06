@@ -1,6 +1,7 @@
 // src/components/Hero.jsx
-import { useEffect, useState, useCallback, useMemo } from "react";
-import { motion } from 'framer-motion';
+import { useEffect, useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import axios from "axios";
 
 const heroTexts = {
   ar: {
@@ -47,49 +48,30 @@ const heroTexts = {
   },
 };
 
-const features = {
-  ar: [
-    { icon: "⚡", text: "موقع سريع" },
-    { icon: "🎨", text: "تصميم عصري" },
-    { icon: "💰", text: "سعر مناسب" },
-    { icon: "🛠️", text: "دعم سريع" },
-    { icon: "🔒", text: "آمن وموثوق" },
-    { icon: "📱", text: "متوافق مع الأجهزة" },
-    { icon: "🚀", text: "SEO محسن" },
-  ],
-  fr: [
-    { icon: "⚡", text: "Site rapide" },
-    { icon: "🎨", text: "Design unique" },
-    { icon: "💰", text: "Prix adapté" },
-    { icon: "🛠️", text: "Support rapide" },
-    { icon: "🔒", text: "Sécurisé" },
-    { icon: "📱", text: "Mobile friendly" },
-    { icon: "🚀", text: "SEO optimisé" },
-  ],
-  en: [
-    { icon: "⚡", text: "Fast website" },
-    { icon: "🎨", text: "Unique design" },
-    { icon: "💰", text: "Affordable" },
-    { icon: "🛠️", text: "Quick support" },
-    { icon: "🔒", text: "Secure" },
-    { icon: "📱", text: "Mobile friendly" },
-    { icon: "🚀", text: "SEO optimized" },
-  ],
-};
-
 export default function Hero({ lang }) {
   const t = useMemo(() => heroTexts[lang] || heroTexts.fr, [lang]);
-  const langFeatures = useMemo(() => features[lang] || features.fr, [lang]);
 
-  // Typewriter effect optimisé
+  // ===== State pour features depuis MongoDB =====
+  const [dbFeatures, setDbFeatures] = useState([]);
+
+  // ===== Fetch features depuis API =====
+  useEffect(() => {
+    const fetchFeatures = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/features");
+        setDbFeatures(res.data);
+      } catch (err) {
+        console.error("Erreur fetch features:", err);
+      }
+    };
+    fetchFeatures();
+  }, []);
+
+  // ===== Typewriter =====
   const [currentSub, setCurrentSub] = useState("");
   const [subIndex, setSubIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
 
-  // Mouse effect optimisé (avec throttling)
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-
-  // Typewriter avec useCallback
   useEffect(() => {
     const timeout = setTimeout(() => {
       if (charIndex < t.subtitle[subIndex].length) {
@@ -106,33 +88,34 @@ export default function Hero({ lang }) {
     return () => clearTimeout(timeout);
   }, [charIndex, subIndex, t.subtitle]);
 
-  // Mouse effect avec throttling et cleanup
+  // ===== Mouse effect =====
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
   useEffect(() => {
     let animationFrameId;
     let lastTime = 0;
-    const throttleDelay = 16; // ~60fps
+    const throttleDelay = 16;
 
     const handleMouseMove = (e) => {
       const currentTime = Date.now();
       if (currentTime - lastTime > throttleDelay) {
         lastTime = currentTime;
         animationFrameId = requestAnimationFrame(() => {
-          const x = (e.clientX / window.innerWidth - 0.5) * 10; // Réduit l'effet
+          const x = (e.clientX / window.innerWidth - 0.5) * 10;
           const y = (e.clientY / window.innerHeight - 0.5) * 10;
           setMousePosition({ x, y });
         });
       }
     };
 
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-    
+    window.addEventListener("mousemove", handleMouseMove, { passive: true });
+
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("mousemove", handleMouseMove);
       if (animationFrameId) cancelAnimationFrame(animationFrameId);
     };
   }, []);
 
-  // Calcul des transformations optimisé
   const titleTransform = `translateX(${mousePosition.x * 0.05}px) translateY(${mousePosition.y * 0.05}px)`;
   const subtitleTransform = `translateX(${mousePosition.x * 0.03}px) translateY(${mousePosition.y * 0.03}px)`;
   const buttonTransform = `translateX(${mousePosition.x * 0.1}px) translateY(${mousePosition.y * 0.1}px)`;
@@ -143,19 +126,19 @@ export default function Hero({ lang }) {
       id="home"
       className="relative min-h-screen py-20 px-4 sm:px-6 flex flex-col items-center justify-center text-center overflow-hidden"
     >
-      {/* Optimisé: Moins de blobs et plus simples */}
+      {/* Background blobs */}
       <div className="absolute top-10 left-5 sm:left-10 w-48 h-48 sm:w-64 sm:h-64 bg-purple-300/20 dark:bg-purple-500/10 rounded-full blur-2xl animate-pulse" />
       <div className="absolute bottom-10 right-5 sm:right-10 w-56 h-56 sm:w-72 sm:h-72 bg-green-300/15 dark:bg-green-500/10 rounded-full blur-2xl animate-pulse delay-1000" />
-      
-      {/* Grid background optimisée - CSS pur */}
+
+      {/* Grid background */}
       <div className="absolute inset-0 opacity-40 dark:opacity-15 -z-10">
         <div className="absolute inset-0 bg-[linear-gradient(90deg,#00000008_1px,transparent_1px),linear-gradient(#00000008_1px,transparent_1px)] dark:bg-[linear-gradient(90deg,#ffffff05_1px,transparent_1px),linear-gradient(#ffffff05_1px,transparent_1px)] bg-[size:40px_40px]" />
       </div>
 
-      {/* Gradient de fond simple */}
+      {/* Gradient background */}
       <div className="absolute inset-0 bg-gradient-to-b from-white via-slate-50/80 to-white dark:from-gray-900 dark:via-gray-800/80 dark:to-gray-900 -z-20" />
 
-      {/* Badge premium */}
+      {/* Badge */}
       <div className="relative mb-8 sm:mb-12">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -168,14 +151,16 @@ export default function Hero({ lang }) {
             <div className="w-2 h-2 sm:w-3 sm:h-3 bg-green-400 rounded-full" />
           </div>
           <span className="text-xs sm:text-sm font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            {lang === "fr" ? "Agence Digital" : 
-             lang === "ar" ? "وكالة رقمية" : 
-             "Digital Agency"}
+            {lang === "fr"
+              ? "Agence Digital"
+              : lang === "ar"
+              ? "وكالة رقمية"
+              : "Digital Agency"}
           </span>
         </motion.div>
       </div>
 
-      {/* Titre principal */}
+      {/* Title */}
       <motion.h1
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -188,7 +173,7 @@ export default function Hero({ lang }) {
         </span>
       </motion.h1>
 
-      {/* Sous-titre typewriter */}
+      {/* Subtitle Typewriter */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -202,7 +187,7 @@ export default function Hero({ lang }) {
         <span className="ml-1 inline-block w-[2px] h-6 sm:h-8 bg-current animate-blink" />
       </motion.div>
 
-      {/* Bouton CTA optimisé */}
+      {/* CTA Button */}
       <motion.a
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -218,7 +203,7 @@ export default function Hero({ lang }) {
         </span>
       </motion.a>
 
-      {/* Features grid optimisée */}
+      {/* Features Grid */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
@@ -226,19 +211,25 @@ export default function Hero({ lang }) {
         className="w-full max-w-6xl mx-auto px-4"
       >
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
-          {langFeatures.map((feature, index) => (
-            <div
-              key={index}
-              className="group p-3 sm:p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30 hover:border-primary/30 dark:hover:border-primary/40 transition-all duration-300 hover:shadow-md"
-            >
-              <div className="text-2xl sm:text-3xl mb-2 transition-transform duration-300 group-hover:scale-110">
-                {feature.icon}
-              </div>
-              <div className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-                {feature.text}
-              </div>
-            </div>
-          ))}
+          {dbFeatures.length > 0
+            ? dbFeatures.map((feature, index) => (
+                <div
+                  key={index}
+                  className="group p-3 sm:p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border border-gray-200/30 dark:border-gray-700/30 hover:border-primary/30 dark:hover:border-primary/40 transition-all duration-300 hover:shadow-md"
+                >
+                  <div className="text-2xl sm:text-3xl mb-2 transition-transform duration-300 group-hover:scale-110">
+                    {feature.icon}
+                  </div>
+                  <div className="text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+                    {feature.title}
+                  </div>
+                </div>
+              ))
+            : t.subtitle.map((text, i) => (
+                <div key={i} className="text-xs">
+                  {text}
+                </div>
+              ))}
         </div>
       </motion.div>
 
@@ -250,8 +241,18 @@ export default function Hero({ lang }) {
         className="absolute bottom-6 left-1/2 transform -translate-x-1/2"
       >
         <div className="animate-bounce">
-          <svg className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+          <svg
+            className="w-5 h-5 sm:w-6 sm:h-6 text-gray-400 dark:text-gray-500"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M19 14l-7 7m0 0l-7-7m7 7V3"
+            />
           </svg>
         </div>
       </motion.div>
@@ -265,13 +266,13 @@ export default function Hero({ lang }) {
         .animate-blink {
           animation: blink 1s ease-in-out infinite;
         }
-        .animate-bounce {
-          animation: bounce 2s infinite;
-        }
         @keyframes bounce {
           0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
           40% { transform: translateY(-10px); }
           60% { transform: translateY(-5px); }
+        }
+        .animate-bounce {
+          animation: bounce 2s infinite;
         }
       `}</style>
     </section>

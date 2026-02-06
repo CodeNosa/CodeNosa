@@ -1,6 +1,7 @@
 // src/components/AboutPage.jsx
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
+import axios from "axios";
 import {
   FaGithub,
   FaLinkedin,
@@ -12,61 +13,84 @@ import {
   FaMobileAlt,
   FaReact,
   FaCloud,
+  FaGlobe,
+  FaBrain,
+  FaDatabase,
+  FaNetworkWired,
+  FaCogs,
+  FaUserCheck,
+  FaChartLine,
 } from "react-icons/fa";
 
-import samarImg from "../assets/samar.jpeg";
-import nourhenImg from "../assets/nourhen.jpeg";
+// ================= API CONFIG =================
+const API_BASE_URL = "http://localhost:5000";
+const TEAM_API = `${API_BASE_URL}/api/team`;
 
-// ================= DATA  nbdlou lna=================
-const profiles = [
-  {
-    id: "samar",
-    name: { fr: "Samar Gharbi", en: "Samar Gharbi", ar: "سمر الغربي" },
-    role: {
-      fr: "Développeuse Front-End & Applications Mobiles",
-      en: "Front-End & Mobile App Developer",
-      ar: "مطوّرة واجهات أمامية وتطبيقات هاتف"
-    },
-    bio: {
-      fr: "Je transforme vos idées en expériences digitales exceptionnelles, alliant design intuitif et performance technique. Spécialisée dans la création d'interfaces qui captivent et convertissent, j'optimise chaque pixel pour maximiser l'engagement utilisateur.",
-      en: "I transform your ideas into exceptional digital experiences, combining intuitive design and technical performance. Specialized in creating interfaces that captivate and convert, I optimize every pixel to maximize user engagement.",
-      ar: "أحوّل أفكارك إلى تجارب رقمية استثنائية، أجمع بين التصميم البديهي والأداء التقني. متخصصة في إنشاء واجهات تجذب وتحول، وأحسّن كل عنصر لتحقيق أقصى قدر من تفاعل المستخدم."
-    },
-    img: samarImg,
-    expertise: [
-      { icon: <FaReact />, label: { fr: "Applications Web & Mobile", en: "Web & Mobile Applications", ar: "تطبيقات الويب والمحمول" } },
-      { icon: <FaPalette />, label: { fr: "Design Centré Utilisateur", en: "User-Centered Design", ar: "تصميم يركز على المستخدم" } },
-      { icon: <FaRocket />, label: { fr: "Optimisation des performances", en: "Performance Optimization", ar: "تحسين الأداء" } },
-      { icon: <FaMobileAlt />, label: { fr: "Applications Responsives", en: "Responsive Applications", ar: "تطبيقات متجاوبة" } },
-    ],
-    github: "https://github.com/samargh",
-    linkedin: "https://linkedin.com/in/samar",
-  },
-  {
-    id: "nourhen",
-    name: { fr: "Nourhen Ben Halima", en: "Nourhen Ben Halima", ar: "نورهان بن حليمة" },
-    role: {
-      fr: "Architecte Back-End & Infrastructure",
-      en: "Back-End & Infrastructure Architect",
-      ar: "مهندسة البنية التحتية والنظم الخلفية"
-    },
-    bio: {
-      fr: "Je construis l'architecture technique robuste qui soutient vos ambitions digitales. Expert en développement de systèmes sécurisés, scalables et haute performance, je garantis la stabilité et l'évolution de vos plateformes.",
-      en: "I build the robust technical architecture that supports your digital ambitions. Expert in developing secure, scalable, and high-performance systems, I ensure the stability and evolution of your platforms.",
-      ar: "أبني البنية التقنية القوية التي تدعم طموحاتك الرقمية. خبيرة في تطوير أنظمة آمنة وقابلة للتوسع وعالية الأداء، أضمن استقرار وتطور منصاتك."
-    },
-    img: nourhenImg,
-    expertise: [
-      { icon: <FaServer />, label: { fr: "Architecture Cloud", en: "Cloud Architecture", ar: "هندسة السحابة" } },
-      { icon: <FaShieldAlt />, label: { fr: "Sécurité Avancée", en: "Advanced Security", ar: "أمن متقدم" } },
-      { icon: <FaCode />, label: { fr: "APIs & Microservices", en: "APIs & Microservices", ar: "واجهات برمجة والخدمات المصغرة" } },
-      { icon: <FaCloud />, label: { fr: "DevOps & Scalabilité", en: "DevOps & Scalability", ar: "ديف أوبس وقابلية التوسع" } },
-    ],
-    github: "https://github.com/nourhen",
-    linkedin: "https://linkedin.com/in/nourhen",
-  },
-];
+// Mapping des icônes pour les compétences
+const COMPETENCE_ICONS = {
+  applicationsWeb: <FaGlobe />,
+  applicationsMobile: <FaMobileAlt />,
+  uiUx: <FaPalette />,
+  optimisationPerformance: <FaRocket />,
+  frontEnd: <FaReact />,
+  responsive: <FaMobileAlt />,
+  accessibilite: <FaUserCheck />,
+};
 
+// Mapping des labels pour les compétences
+const COMPETENCE_LABELS = {
+  applicationsWeb: {
+    fr: "Applications Web",
+    en: "Web Applications",
+    ar: "تطبيقات الويب"
+  },
+  applicationsMobile: {
+    fr: "Applications Mobile",
+    en: "Mobile Applications",
+    ar: "تطبيقات المحمول"
+  },
+  uiUx: {
+    fr: "UI/UX Design",
+    en: "UI/UX Design",
+    ar: "تصميم واجهة المستخدم"
+  },
+  optimisationPerformance: {
+    fr: "Optimisation Performance",
+    en: "Performance Optimization",
+    ar: "تحسين الأداء"
+  },
+  frontEnd: {
+    fr: "Front-End",
+    en: "Front-End",
+    ar: "واجهة أمامية"
+  },
+  responsive: {
+    fr: "Responsive Design",
+    en: "Responsive Design",
+    ar: "تصميم متجاوب"
+  },
+  accessibilite: {
+    fr: "Accessibilité",
+    en: "Accessibility",
+    ar: "إمكانية الوصول"
+  },
+};
+
+// Icônes par spécialité
+const SPECIALITE_ICONS = {
+  "Développement Front-End": <FaReact />,
+  "Développement Back-End": <FaServer />,
+  "Full-Stack": <FaCogs />,
+  "UI/UX Design": <FaPalette />,
+  "DevOps": <FaNetworkWired />,
+  "Data Science": <FaBrain />,
+  "Cloud Architecture": <FaCloud />,
+  "Mobile Development": <FaMobileAlt />,
+  "Database": <FaDatabase />,
+  "Security": <FaShieldAlt />,
+  "Performance": <FaChartLine />,
+  "API Development": <FaCode />,
+};
 
 // ================= ANIMATION =================
 const cardVariants = {
@@ -77,8 +101,99 @@ const cardVariants = {
 // ================= COMPONENT =================
 export default function AboutPage({ lang = "fr" }) {
   const [windowWidth, setWindowWidth] = useState(0);
+  const [members, setMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Récupérer les données depuis MongoDB
+  const fetchTeamMembers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axios.get(TEAM_API);
+      console.log("Données reçues:", response.data); // Debug
+      
+      // Transformer les données de MongoDB en format compatible
+      const formattedMembers = response.data.map(member => ({
+        id: member._id,
+        name: {
+          fr: member.nomComplet || "",
+          en: member.nomComplet || "",
+          ar: member.nomComplet || ""
+        },
+        role: {
+          fr: member.poste || "",
+          en: member.poste || "",
+          ar: member.poste || ""
+        },
+        bio: {
+          fr: member.description || "",
+          en: member.description || "",
+          ar: member.description || ""
+        },
+        img: member.photo || "",
+        specialitePrincipale: member.specialitePrincipale || "",
+        expertise: transformCompetencesToExpertise(member.competences || {}, member.technologies || []),
+        technologies: member.technologies || [],
+        qualites: member.qualites || [],
+        langues: member.langues || [],
+        anneesExperience: member.anneesExperience || 0,
+        disponibilite: member.disponibilite || "Full-time",
+        reseaux: {
+          linkedin: member.reseaux?.linkedin || "",
+          github: member.reseaux?.github || "",
+        },
+        projets: member.projets || [],
+        competences: member.competences || {},
+      }));
+      
+      console.log("Membres formatés:", formattedMembers); // Debug
+      setMembers(formattedMembers);
+    } catch (err) {
+      console.error("Erreur lors du chargement des membres:", err);
+      setError("Impossible de charger les données de l'équipe");
+      
+      // Données de secours
+      setMembers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Transformer les compétences booléennes en format d'expertise
+  const transformCompetencesToExpertise = (competences, technologies) => {
+    const expertiseList = [];
+    
+    // Ajouter les compétences activées
+    Object.entries(competences || {}).forEach(([key, value]) => {
+      if (value && COMPETENCE_ICONS[key] && COMPETENCE_LABELS[key]) {
+        expertiseList.push({
+          icon: COMPETENCE_ICONS[key],
+          label: COMPETENCE_LABELS[key],
+          type: "competence"
+        });
+      }
+    });
+    
+    // Ajouter les 3 premières technologies comme expertises
+    technologies.slice(0, 3).forEach(tech => {
+      expertiseList.push({
+        icon: <FaCode />,
+        label: {
+          fr: tech,
+          en: tech,
+          ar: tech
+        },
+        type: "technologie"
+      });
+    });
+    
+    return expertiseList;
+  };
 
   useEffect(() => {
+    fetchTeamMembers();
+    
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
     };
@@ -92,9 +207,83 @@ export default function AboutPage({ lang = "fr" }) {
   const isExtraSmall = windowWidth < 400;
   const isSmall = windowWidth >= 400 && windowWidth < 640;
   const isMedium = windowWidth >= 640 && windowWidth < 768;
-  const isTablet = windowWidth >= 768 && windowWidth < 1030; // Zone critique
+  const isTablet = windowWidth >= 768 && windowWidth < 1030;
   const isLarge = windowWidth >= 1030 && windowWidth < 1280;
   const isExtraLarge = windowWidth >= 1280;
+
+  // Fonction pour obtenir l'icône par spécialité
+  const getSpecialiteIcon = (specialite) => {
+    for (const [key, icon] of Object.entries(SPECIALITE_ICONS)) {
+      if (specialite?.includes(key)) {
+        return icon;
+      }
+    }
+    return <FaBrain />; // Icône par défaut
+  };
+
+  // État de chargement
+  if (loading) {
+    return (
+      <section className="relative py-20 px-4 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">
+            {lang === "fr" && "Chargement de l'équipe..."}
+            {lang === "en" && "Loading team..."}
+            {lang === "ar" && "جارٍ تحميل الفريق..."}
+          </p>
+        </div>
+      </section>
+    );
+  }
+
+  // État d'erreur
+  if (error) {
+    return (
+      <section className="relative py-20 px-4 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950 min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-red-500 text-4xl mb-4">⚠️</div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {lang === "fr" && "Erreur de chargement"}
+            {lang === "en" && "Loading Error"}
+            {lang === "ar" && "خطأ في التحميل"}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            {error}
+          </p>
+          <button
+            onClick={fetchTeamMembers}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            {lang === "fr" && "Réessayer"}
+            {lang === "en" && "Retry"}
+            {lang === "ar" && "إعادة المحاولة"}
+          </button>
+        </div>
+      </section>
+    );
+  }
+
+  // État vide
+  if (members.length === 0) {
+    return (
+      <section className="relative py-20 px-4 bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950 min-h-screen flex items-center justify-center">
+        <div className="text-center max-w-md">
+          <div className="text-gray-400 text-4xl mb-4">👥</div>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+            {lang === "fr" && "Aucun membre d'équipe"}
+            {lang === "en" && "No team members"}
+            {lang === "ar" && "لا يوجد أعضاء في الفريق"}
+          </h3>
+          <p className="text-gray-600 dark:text-gray-300">
+            {lang === "fr" && "Commencez par ajouter des membres via le panneau d'administration."}
+            {lang === "en" && "Start by adding members via the admin panel."}
+            {lang === "ar" && "ابدأ بإضافة أعضاء عبر لوحة الإدارة."}
+          </p>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section
@@ -151,9 +340,9 @@ export default function AboutPage({ lang = "fr" }) {
             "text-4xl lg:text-5xl"}
             ${isTablet ? "px-2" : "px-0"}
           `}>
-            {lang === "fr" && "L'Excellence Technique au Service de Votre Vision"}
-            {lang === "en" && "Technical Excellence Serving Your Vision"}
-            {lang === "ar" && "التميز التقني في خدمة رؤيتك"}
+            {lang === "fr" && "Notre Équipe d'Experts"}
+            {lang === "en" && "Our Expert Team"}
+            {lang === "ar" && "فريق خبرائنا"}
           </h2>
           <p className={`
             text-gray-600 dark:text-gray-300 mx-auto
@@ -165,13 +354,16 @@ export default function AboutPage({ lang = "fr" }) {
             ${isTablet ? "px-4" : "px-2"}
             leading-relaxed
           `}>
-            {lang === "fr" && "Une équipe d'experts dédiés à transformer vos projets digitaux en succès tangibles"}
-            {lang === "en" && "A team of experts dedicated to transforming your digital projects into tangible success"}
-            {lang === "ar" && "فريق من الخبراء مكرس لتحويل مشاريعك الرقمية إلى نجاح ملموس"}
+            {lang === "fr" && "Découvrez les talents qui donnent vie à vos projets digitaux"}
+            {lang === "en" && "Meet the talents who bring your digital projects to life"}
+            {lang === "ar" && "تعرف على المواهب التي تحيي مشاريعك الرقمية"}
           </p>
+          <div className="mt-4 text-sm text-gray-500">
+            {members.length} {lang === "fr" ? "membres" : lang === "en" ? "members" : "أعضاء"}
+          </div>
         </motion.div>
 
-        {/* Profile Cards - Optimisé pour la zone critique 768-1030px */}
+        {/* Profile Cards */}
         <div className={`
           grid gap-6 sm:gap-8 
           ${isTablet ? `
@@ -184,9 +376,9 @@ export default function AboutPage({ lang = "fr" }) {
           isLarge ? "grid-cols-2 gap-10" :
           "grid-cols-2 gap-12"}
         `}>
-          {profiles.map((p) => (
+          {members.map((member) => (
             <motion.article
-              key={p.id}
+              key={member.id}
               variants={cardVariants}
               initial="hidden"
               whileInView="visible"
@@ -237,13 +429,25 @@ export default function AboutPage({ lang = "fr" }) {
                     isLarge ? "w-36 h-36 rounded-2xl" :
                     "w-40 h-40 rounded-2xl"}
                   `}>
-                    <img
-                      src={p.img}
-                      alt={p.name[lang]}
-                      loading="lazy"
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
+                    {member.img ? (
+                      <img
+                        src={member.img}
+                        alt={member.name[lang]}
+                        loading="lazy"
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        onError={(e) => {
+                          e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name[lang])}&background=random`;
+                        }}
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900 dark:to-purple-900 flex items-center justify-center">
+                        <span className="text-2xl font-bold text-gray-700 dark:text-gray-300">
+                          {member.name[lang]?.charAt(0) || "?"}
+                        </span>
+                      </div>
+                    )}
                   </div>
+                  {/* Badge spécialité */}
                   <div className={`
                     absolute -bottom-2 -right-2 bg-gradient-to-r from-blue-500 to-purple-600 
                     rounded-full flex items-center justify-center
@@ -256,31 +460,7 @@ export default function AboutPage({ lang = "fr" }) {
                     isLarge ? "w-11 h-11" :
                     "w-12 h-12"}
                   `}>
-                    {p.id === "samar" ? (
-                      <FaReact className={`
-                        text-white 
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? "text-base" : "text-lg"}
-                        ` :
-                        isExtraSmall ? "text-xs" :
-                        isSmall ? "text-sm" :
-                        isMedium ? "text-base" :
-                        isLarge ? "text-lg" :
-                        "text-xl"}
-                      `} />
-                    ) : (
-                      <FaServer className={`
-                        text-white 
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? "text-base" : "text-lg"}
-                        ` :
-                        isExtraSmall ? "text-xs" :
-                        isSmall ? "text-sm" :
-                        isMedium ? "text-base" :
-                        isLarge ? "text-lg" :
-                        "text-xl"}
-                      `} />
-                    )}
+                    {getSpecialiteIcon(member.specialitePrincipale)}
                   </div>
                 </div>
 
@@ -290,26 +470,31 @@ export default function AboutPage({ lang = "fr" }) {
                   ${isTablet && windowWidth < 850 ? "text-center" : ""}
                   ${isExtraSmall || isSmall || isMedium ? "text-center" : ""}
                 `}>
-                  {/* Role badge */}
+                  {/* Badge disponibilité et expérience */}
                   <div className={`
-                    mb-3 
-                    ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "flex justify-center" : ""}
+                    mb-3 flex flex-wrap gap-2
+                    ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "justify-center" : ""}
                   `}>
+                    {/* Badge disponibilité */}
                     <span className={`
-                      inline-block bg-gradient-to-r from-blue-100 to-purple-100 
-                      dark:from-blue-900/30 dark:to-purple-900/30 
-                      text-blue-700 dark:text-blue-300 rounded-full font-semibold
-                      ${isTablet ? `
-                        ${windowWidth >= 850 ? "px-4 py-1.5 text-sm" : "px-3 py-1 text-xs"}
-                      ` :
-                      isExtraSmall ? "px-2 py-0.5 text-xs" :
-                      isSmall ? "px-3 py-1 text-xs" :
-                      isMedium ? "px-3 py-1 text-sm" :
-                      isLarge ? "px-4 py-1.5 text-sm" :
-                      "px-4 py-1.5 text-base"}
+                      inline-flex items-center px-3 py-1 rounded-full text-xs font-medium
+                      ${member.disponibilite === "Full-time" 
+                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300"
+                        : member.disponibilite === "Part-time"
+                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300"
+                        : "bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300"
+                      }
                     `}>
-                      {p.role[lang]}
+                      {member.disponibilite}
                     </span>
+                    
+                    {/* Badge expérience */}
+                    {member.anneesExperience > 0 && (
+                      <span className="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 rounded-full text-xs font-medium">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {member.anneesExperience} {lang === "fr" ? "ans" : lang === "en" ? "years" : "سنوات"}
+                      </span>
+                    )}
                   </div>
 
                   {/* Name */}
@@ -324,10 +509,42 @@ export default function AboutPage({ lang = "fr" }) {
                     isLarge ? "text-2xl" :
                     "text-3xl"}
                   `}>
-                    {p.name[lang]}
+                    {member.name[lang]}
                   </h3>
 
-                  {/* Bio - Optimisé pour tablette */}
+                  {/* Role */}
+                  <div className="mb-3">
+                    <p className={`
+                      text-gray-700 dark:text-gray-300 font-medium
+                      ${isTablet ? `
+                        ${windowWidth >= 850 ? "text-base" : "text-sm"}
+                      ` :
+                      isExtraSmall ? "text-sm" :
+                      isSmall ? "text-sm" :
+                      isMedium ? "text-base" :
+                      isLarge ? "text-base" :
+                      "text-lg"}
+                    `}>
+                      {member.role[lang]}
+                    </p>
+                    {member.specialitePrincipale && (
+                      <p className={`
+                        text-gray-600 dark:text-gray-400
+                        ${isTablet ? `
+                          ${windowWidth >= 850 ? "text-sm" : "text-xs"}
+                        ` :
+                        isExtraSmall ? "text-xs" :
+                        isSmall ? "text-xs" :
+                        isMedium ? "text-sm" :
+                        isLarge ? "text-sm" :
+                        "text-base"}
+                      `}>
+                        {member.specialitePrincipale}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Bio */}
                   <p className={`
                     text-gray-600 dark:text-gray-300 mb-4 sm:mb-6 leading-relaxed
                     ${isTablet ? `
@@ -341,23 +558,23 @@ export default function AboutPage({ lang = "fr" }) {
                     isLarge ? "text-base" :
                     "text-lg"}
                   `}>
-                    {p.bio[lang]}
+                    {member.bio[lang]}
                   </p>
 
-                  {/* Expertise Tags - Layout amélioré pour tablette */}
+                  {/* Expertise Tags */}
                   <div className={`
                     flex flex-wrap gap-2 mb-6
                     ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "justify-center" : ""}
                   `}>
-                    {p.expertise.map((e, i) => (
+                    {member.expertise?.slice(0, 5).map((expertise, index) => (
                       <span
-                        key={i}
+                        key={index}
                         className={`
                           flex items-center gap-1.5
                           bg-gradient-to-r from-gray-50 to-white 
                           dark:from-gray-800 dark:to-gray-900 
                           border border-gray-200 dark:border-gray-700 
-                          rounded-full font-medium group-hover:border-primary/30 
+                          rounded-full font-medium group-hover:border-blue-300 
                           transition-colors
                           ${isTablet ? `
                             ${windowWidth >= 850 ? 
@@ -374,7 +591,7 @@ export default function AboutPage({ lang = "fr" }) {
                         `}
                       >
                         <span className={`
-                          text-primary
+                          text-blue-600 dark:text-blue-400
                           ${isTablet ? `
                             ${windowWidth >= 850 ? "text-sm" : "text-xs"}
                           ` :
@@ -384,7 +601,7 @@ export default function AboutPage({ lang = "fr" }) {
                           isLarge ? "text-base" :
                           "text-lg"}
                         `}>
-                          {e.icon}
+                          {expertise.icon}
                         </span>
                         <span className={`
                           text-gray-700 dark:text-gray-300 whitespace-nowrap
@@ -398,159 +615,163 @@ export default function AboutPage({ lang = "fr" }) {
                           isLarge ? "text-sm truncate max-w-[130px]" :
                           "text-sm"}
                         `}>
-                          {e.label[lang]}
+                          {expertise.label[lang] || expertise.label}
                         </span>
                       </span>
                     ))}
+                    {member.expertise?.length > 5 && (
+                      <span className={`
+                        inline-flex items-center px-3 py-1.5 bg-gray-100 dark:bg-gray-800 
+                        text-gray-600 dark:text-gray-400 rounded-full text-xs font-medium
+                      `}>
+                        +{member.expertise.length - 5} {lang === "fr" ? "de plus" : lang === "en" ? "more" : "المزيد"}
+                      </span>
+                    )}
                   </div>
 
-                  {/* Social Links - Optimisé pour tablette */}
-                  <div className={`
-                    flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800
-                    ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "flex-col" : "flex-row"}
-                    ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "items-center" : ""}
-                  `}>
-                    <a
-                      href={p.github}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`
-                        flex items-center justify-center gap-2 
-                        bg-gray-900 text-white rounded-lg hover:bg-black 
-                        transition-colors group
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? 
-                            "px-4 py-2.5 text-sm" : 
-                            "px-4 py-2 text-sm w-full"}
-                        ` :
-                        isExtraSmall ? "px-3 py-2 text-xs w-full" :
-                        isSmall ? "px-4 py-2 text-xs w-full" :
-                        isMedium ? "px-4 py-2.5 text-sm w-full" :
-                        isLarge ? "px-4 py-2.5 text-sm" :
-                        "px-5 py-3 text-base"}
-                        ${(isTablet && windowWidth >= 850) || isLarge || isExtraLarge ? "w-auto" : "w-full"}
-                      `}
-                    >
-                      <FaGithub className={`
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? "text-sm" : "text-xs"}
-                        ` :
-                        isExtraSmall ? "text-xs" :
-                        isSmall ? "text-xs" :
-                        isMedium ? "text-sm" :
-                        isLarge ? "text-base" :
-                        "text-lg"}
-                      `} />
-                      <span className={`
-                        font-medium
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? "text-sm" : "text-xs"}
-                        ` :
-                        isExtraSmall ? "text-xs" :
-                        isSmall ? "text-xs" :
-                        isMedium ? "text-sm" :
-                        isLarge ? "text-sm" :
-                        "text-base"}
+                  {/* Technologies rapides */}
+                  {member.technologies?.length > 0 && (
+                    <div className="mb-4">
+                      <p className={`
+                        text-xs text-gray-500 dark:text-gray-400 mb-2
+                        ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "text-center" : ""}
                       `}>
-                        GitHub
-                      </span>
-                    </a>
-                    <a
-                      href={p.linkedin}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`
-                        flex items-center justify-center gap-2 
-                        bg-blue-600 text-white rounded-lg hover:bg-blue-700 
-                        transition-colors group
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? 
-                            "px-4 py-2.5 text-sm" : 
-                            "px-4 py-2 text-sm w-full"}
-                        ` :
-                        isExtraSmall ? "px-3 py-2 text-xs w-full" :
-                        isSmall ? "px-4 py-2 text-xs w-full" :
-                        isMedium ? "px-4 py-2.5 text-sm w-full" :
-                        isLarge ? "px-4 py-2.5 text-sm" :
-                        "px-5 py-3 text-base"}
-                        ${(isTablet && windowWidth >= 850) || isLarge || isExtraLarge ? "w-auto" : "w-full"}
-                      `}
-                    >
-                      <FaLinkedin className={`
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? "text-sm" : "text-xs"}
-                        ` :
-                        isExtraSmall ? "text-xs" :
-                        isSmall ? "text-xs" :
-                        isMedium ? "text-sm" :
-                        isLarge ? "text-base" :
-                        "text-lg"}
-                      `} />
-                      <span className={`
-                        font-medium
-                        ${isTablet ? `
-                          ${windowWidth >= 850 ? "text-sm" : "text-xs"}
-                        ` :
-                        isExtraSmall ? "text-xs" :
-                        isSmall ? "text-xs" :
-                        isMedium ? "text-sm" :
-                        isLarge ? "text-sm" :
-                        "text-base"}
-                      `}>
-                        LinkedIn
-                      </span>
-                    </a>
-                  </div>
+                        {lang === "fr" && "Technologies :"}
+                        {lang === "en" && "Technologies:"}
+                        {lang === "ar" && "التقنيات:"}
+                      </p>
+                      <div className="flex flex-wrap gap-1">
+                        {member.technologies.slice(0, 4).map((tech, index) => (
+                          <span
+                            key={index}
+                            className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded text-xs"
+                          >
+                            {tech}
+                          </span>
+                        ))}
+                        {member.technologies.length > 4 && (
+                          <span className="px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded text-xs">
+                            +{member.technologies.length - 4}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Social Links */}
+                  {(member.reseaux?.linkedin || member.reseaux?.github) && (
+                    <div className={`
+                      flex gap-3 pt-4 border-t border-gray-100 dark:border-gray-800
+                      ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "flex-col" : "flex-row"}
+                      ${(isTablet && windowWidth < 850) || isExtraSmall || isSmall || isMedium ? "items-center" : ""}
+                    `}>
+                      {member.reseaux?.github && (
+                        <a
+                          href={member.reseaux.github}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`
+                            flex items-center justify-center gap-2 
+                            bg-gray-900 text-white rounded-lg hover:bg-black 
+                            transition-colors group
+                            ${isTablet ? `
+                              ${windowWidth >= 850 ? 
+                                "px-4 py-2.5 text-sm" : 
+                                "px-4 py-2 text-sm w-full"}
+                            ` :
+                            isExtraSmall ? "px-3 py-2 text-xs w-full" :
+                            isSmall ? "px-4 py-2 text-xs w-full" :
+                            isMedium ? "px-4 py-2.5 text-sm w-full" :
+                            isLarge ? "px-4 py-2.5 text-sm" :
+                            "px-5 py-3 text-base"}
+                            ${(isTablet && windowWidth >= 850) || isLarge || isExtraLarge ? "w-auto" : "w-full"}
+                          `}
+                        >
+                          <FaGithub className={`
+                            ${isTablet ? `
+                              ${windowWidth >= 850 ? "text-sm" : "text-xs"}
+                            ` :
+                            isExtraSmall ? "text-xs" :
+                            isSmall ? "text-xs" :
+                            isMedium ? "text-sm" :
+                            isLarge ? "text-base" :
+                            "text-lg"}
+                          `} />
+                          <span className={`
+                            font-medium
+                            ${isTablet ? `
+                              ${windowWidth >= 850 ? "text-sm" : "text-xs"}
+                            ` :
+                            isExtraSmall ? "text-xs" :
+                            isSmall ? "text-xs" :
+                            isMedium ? "text-sm" :
+                            isLarge ? "text-sm" :
+                            "text-base"}
+                          `}>
+                            GitHub
+                          </span>
+                        </a>
+                      )}
+                      {member.reseaux?.linkedin && (
+                        <a
+                          href={member.reseaux.linkedin}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={`
+                            flex items-center justify-center gap-2 
+                            bg-blue-600 text-white rounded-lg hover:bg-blue-700 
+                            transition-colors group
+                            ${isTablet ? `
+                              ${windowWidth >= 850 ? 
+                                "px-4 py-2.5 text-sm" : 
+                                "px-4 py-2 text-sm w-full"}
+                            ` :
+                            isExtraSmall ? "px-3 py-2 text-xs w-full" :
+                            isSmall ? "px-4 py-2 text-xs w-full" :
+                            isMedium ? "px-4 py-2.5 text-sm w-full" :
+                            isLarge ? "px-4 py-2.5 text-sm" :
+                            "px-5 py-3 text-base"}
+                            ${(isTablet && windowWidth >= 850) || isLarge || isExtraLarge ? "w-auto" : "w-full"}
+                          `}
+                        >
+                          <FaLinkedin className={`
+                            ${isTablet ? `
+                              ${windowWidth >= 850 ? "text-sm" : "text-xs"}
+                            ` :
+                            isExtraSmall ? "text-xs" :
+                            isSmall ? "text-xs" :
+                            isMedium ? "text-sm" :
+                            isLarge ? "text-base" :
+                            "text-lg"}
+                          `} />
+                          <span className={`
+                            font-medium
+                            ${isTablet ? `
+                              ${windowWidth >= 850 ? "text-sm" : "text-xs"}
+                            ` :
+                            isExtraSmall ? "text-xs" :
+                            isSmall ? "text-xs" :
+                            isMedium ? "text-sm" :
+                            isLarge ? "text-sm" :
+                            "text-base"}
+                          `}>
+                            LinkedIn
+                          </span>
+                        </a>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </motion.article>
           ))}
         </div>
 
-        {/* Value Proposition */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-30px" }}
-          className={`
-            mt-10 sm:mt-12 lg:mt-16 text-center
-            ${isTablet ? "px-4" : ""}
-          `}
-        >
-          <div className={`
-            inline-block bg-gradient-to-r from-blue-500 to-purple-600 
-            ${isTablet ? `
-              ${windowWidth >= 850 ? "rounded-2xl px-6 py-3" : "rounded-xl px-4 py-2"}
-            ` :
-            isExtraSmall ? "rounded-lg px-3 py-2" :
-            isSmall ? "rounded-lg px-4 py-2" :
-            isMedium ? "rounded-xl px-5 py-3" :
-            isLarge ? "rounded-2xl px-6 py-3" :
-            "rounded-2xl px-8 py-4"}
-          `}>
-            <p className={`
-              text-white font-semibold
-              ${isTablet ? `
-                ${windowWidth >= 850 ? "text-sm" : "text-xs"}
-                ${windowWidth < 850 ? "whitespace-normal" : "whitespace-nowrap"}
-              ` :
-              isExtraSmall ? "text-xs whitespace-normal" :
-              isSmall ? "text-xs whitespace-nowrap" :
-              isMedium ? "text-sm whitespace-nowrap" :
-              isLarge ? "text-base whitespace-nowrap" :
-              "text-lg whitespace-nowrap"}
-            `}>
-              {lang === "fr" && "🔒 Garantie de qualité - 📱 Support multi-plateforme - ⚡ Livraison rapide"}
-              {lang === "en" && "🔒 Quality guarantee - 📱 Multi-platform support - ⚡ Fast delivery"}
-              {lang === "ar" && "🔒 ضمان الجودة - 📱 دعم متعدد المنصات - ⚡ تسليم سريع"}
-            </p>
-          </div>
-        </motion.div>
+        
       </div>
 
       {/* CSS pour améliorer la flexibilité */}
       <style jsx>{`
-        /* Utilitaire line-clamp */
         .line-clamp-3 {
           display: -webkit-box;
           -webkit-line-clamp: 3;
@@ -565,21 +786,6 @@ export default function AboutPage({ lang = "fr" }) {
           overflow: hidden;
         }
         
-        /* Optimisations pour la zone critique */
-        @media (min-width: 768px) and (max-width: 1030px) {
-          /* Ajustement fluide des tailles de police */
-          .fluid-text {
-            font-size: clamp(0.875rem, 1.5vw, 1.125rem);
-          }
-          
-          /* Images proportionnelles */
-          .fluid-image {
-            width: clamp(100px, 20vw, 140px);
-            height: clamp(100px, 20vw, 140px);
-          }
-        }
-        
-        /* Support pour le texte arabe */
         [lang="ar"] {
           direction: rtl;
           text-align: right;
@@ -588,26 +794,16 @@ export default function AboutPage({ lang = "fr" }) {
         [lang="ar"] .flex-row {
           direction: ltr;
         }
-        
-        /* Smooth scrolling pour les tags */
-        .expertise-container {
-          scrollbar-width: thin;
-          scrollbar-color: rgba(59, 130, 246, 0.5) transparent;
-        }
-        
-        .expertise-container::-webkit-scrollbar {
-          height: 4px;
-        }
-        
-        .expertise-container::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        
-        .expertise-container::-webkit-scrollbar-thumb {
-          background: rgba(59, 130, 246, 0.5);
-          border-radius: 2px;
-        }
       `}</style>
     </section>
+  );
+}
+
+// Composant Calendar icon (ajouter en import)
+function Calendar({ className }) {
+  return (
+    <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+    </svg>
   );
 }

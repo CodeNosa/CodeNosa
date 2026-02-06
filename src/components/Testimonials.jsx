@@ -1,69 +1,20 @@
-// src/components/Testimonials.jsx
 import { FaStar, FaQuoteLeft } from "react-icons/fa";
-import { useState } from "react";
-
-// Avis clients existants
-const initialTestimonials = [
-  {
-    id: 1,
-    name: "Ahmed Ben Salah",
-    role: { fr: "CEO, TechStartup", en: "CEO, TechStartup", ar: "المدير التنفيذي، TechStartup" },
-    rating: 5,
-    comment: {
-      fr: "Excellent travail ! CodeNosa a développé notre application mobile en un temps record. Professionnels et réactifs.",
-      en: "Excellent work! CodeNosa developed our mobile app in record time. Professional and responsive team.",
-      ar: "عمل ممتاز! طوّر CodeNosa تطبيقنا المحمول في وقت قياسي. فريق محترف وسريع الاستجابة."
-    },
-    date: "2024-01-15",
-    avatar: "AB"
-  },
-  {
-    id: 2,
-    name: "Marie Dubois",
-    role: { fr: "Responsible Marketing", en: "Marketing Manager", ar: "مديرة التسويق" },
-    rating: 4,
-    comment: {
-      fr: "Site web magnifique et très performant. Notre trafic a augmenté de 40% depuis le lancement.",
-      en: "Beautiful and high-performing website. Our traffic increased by 40% since launch.",
-      ar: "موقع ويب جميل وعالي الأداء. زادت زياراتنا بنسبة 40٪ منذ الإطلاق."
-    },
-    date: "2024-02-10",
-    avatar: "MD"
-  },
-  {
-    id: 3,
-    name: "Karim Zayani",
-    role: { fr: "Entrepreneur", en: "Entrepreneur", ar: "رجل أعمال" },
-    rating: 5,
-    comment: {
-      fr: "Support technique excellent. Ils sont toujours disponibles pour nous aider. Je recommande vivement !",
-      en: "Excellent technical support. Always available to help. Highly recommended!",
-      ar: "دعم فني ممتاز. دائمًا متاحون للمساعدة. أوصي بشدة!"
-    },
-    date: "2024-03-05",
-    avatar: "KZ"
-  }
-];
+import { useState, useEffect } from "react";
 
 export default function Testimonials({ lang }) {
-  const [testimonials, setTestimonials] = useState(initialTestimonials);
+  const [testimonials, setTestimonials] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState("");
   const [newName, setNewName] = useState("");
   const [newRole, setNewRole] = useState("");
   const [rating, setRating] = useState(5);
   const [hoverRating, setHoverRating] = useState(0);
 
+  const API_URL = "http://localhost:5000/api/testimonials";
+
   const content = {
-    testimonialsTitle: {
-      fr: "Avis Clients",
-      en: "Customer Reviews",
-      ar: "آراء العملاء"
-    },
-    addTestimonialTitle: {
-      fr: "Ajouter un avis",
-      en: "Add a Review",
-      ar: "أضف رأيك"
-    },
+    testimonialsTitle: { fr: "Avis Clients", en: "Customer Reviews", ar: "آراء العملاء" },
+    addTestimonialTitle: { fr: "Ajouter un avis", en: "Add a Review", ar: "أضف رأيك" },
     formLabels: {
       name: { fr: "Votre nom", en: "Your name", ar: "اسمك" },
       role: { fr: "Votre poste / entreprise", en: "Your position / company", ar: "منصبك / شركتك" },
@@ -71,48 +22,71 @@ export default function Testimonials({ lang }) {
       submit: { fr: "Publier l'avis", en: "Submit Review", ar: "نشر الرأي" },
       rating: { fr: "Note", en: "Rating", ar: "التقييم" }
     },
-    averageRating: {
-      fr: "Note moyenne",
-      en: "Average Rating",
-      ar: "متوسط التقييم"
-    },
-    totalReviews: {
-      fr: "avis",
-      en: "reviews",
-      ar: "رأي"
+    averageRating: { fr: "Note moyenne", en: "Average Rating", ar: "متوسط التقييم" },
+    totalReviews: { fr: "avis", en: "reviews", ar: "رأي" }
+  };
+
+  // ===== Fetch testimonials depuis backend (public ou admin) =====
+  const fetchTestimonials = async () => {
+    try {
+      const res = await fetch(`${API_URL}/public`); // pour afficher uniquement approuvés
+      const data = await res.json();
+      setTestimonials(data);
+    } catch (err) {
+      console.error("Erreur fetch testimonials:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleSubmitTestimonial = (e) => {
+  useEffect(() => {
+    fetchTestimonials();
+  }, []);
+
+  // ===== Ajouter un témoignage =====
+  const handleSubmitTestimonial = async (e) => {
     e.preventDefault();
     if (!newName.trim() || !newComment.trim()) return;
 
     const newTestimonial = {
-      id: testimonials.length + 1,
-      name: newName,
-      role: { fr: newRole, en: newRole, ar: newRole },
-      rating,
-      comment: { fr: newComment, en: newComment, ar: newComment },
-      date: new Date().toISOString().split('T')[0],
-      avatar: newName.split(' ').map(n => n[0]).join('').toUpperCase()
+      nomClient: newName,
+      entreprise: newRole,
+      commentaire: newComment,
+      note: rating,
+      verifie: false,
+      approuve: false
     };
 
-    setTestimonials([newTestimonial, ...testimonials]);
-    setNewComment("");
-    setNewName("");
-    setNewRole("");
-    setRating(5);
+    try {
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newTestimonial)
+      });
+      const saved = await res.json();
+      setTestimonials([saved, ...testimonials]); // ajout temporaire en front
+      setNewComment("");
+      setNewName("");
+      setNewRole("");
+      setRating(5);
+    } catch (err) {
+      console.error("Erreur ajout testimonial:", err);
+    }
   };
 
-  const averageRating = testimonials.reduce((acc, curr) => acc + curr.rating, 0) / testimonials.length;
+  const averageRating =
+    testimonials.length > 0
+      ? testimonials.reduce((acc, t) => acc + t.note, 0) / testimonials.length
+      : 0;
+
+  if (loading) return <p className="text-center py-16">Chargement des avis...</p>;
 
   return (
     <section id="testimonials" className="py-16 bg-gradient-to-b from-white to-gray-50 dark:from-night/30 dark:to-gray-900">
       <div className="max-w-7xl mx-auto px-6 lg:px-8">
         <div className="text-center mb-16">
           <h2 className="text-4xl font-bold mb-4">{content.testimonialsTitle[lang]}</h2>
-          
-          {/* Average Rating */}
+
           <div className="inline-flex items-center bg-white dark:bg-gray-800 px-6 py-3 rounded-xl shadow-lg mb-8">
             <div className="text-center mr-8">
               <div className="text-5xl font-bold text-primary">{averageRating.toFixed(1)}</div>
@@ -124,9 +98,7 @@ export default function Testimonials({ lang }) {
                   <FaStar
                     key={star}
                     className={`text-2xl ${
-                      star <= Math.round(averageRating)
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
+                      star <= Math.round(averageRating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
                     }`}
                   />
                 ))}
@@ -138,16 +110,14 @@ export default function Testimonials({ lang }) {
           </div>
         </div>
 
-        {/* Add Testimonial Form */}
+        {/* Formulaire d'avis */}
         <div className="max-w-2xl mx-auto mb-16">
           <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 shadow-xl border border-gray-100 dark:border-gray-700">
             <h3 className="text-2xl font-bold mb-6">{content.addTestimonialTitle[lang]}</h3>
             <form onSubmit={handleSubmitTestimonial}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {content.formLabels.name[lang]}
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{content.formLabels.name[lang]}</label>
                   <input
                     type="text"
                     value={newName}
@@ -157,9 +127,7 @@ export default function Testimonials({ lang }) {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    {content.formLabels.role[lang]}
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{content.formLabels.role[lang]}</label>
                   <input
                     type="text"
                     value={newRole}
@@ -168,12 +136,9 @@ export default function Testimonials({ lang }) {
                   />
                 </div>
               </div>
-              
-              {/* Rating Stars */}
+
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {content.formLabels.rating[lang]}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{content.formLabels.rating[lang]}</label>
                 <div className="flex space-x-2">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -186,9 +151,7 @@ export default function Testimonials({ lang }) {
                     >
                       <FaStar
                         className={`text-3xl transition-transform hover:scale-125 ${
-                          star <= (hoverRating || rating)
-                            ? "text-yellow-400 fill-yellow-400"
-                            : "text-gray-300"
+                          star <= (hoverRating || rating) ? "text-yellow-400 fill-yellow-400" : "text-gray-300"
                         }`}
                       />
                     </button>
@@ -197,9 +160,7 @@ export default function Testimonials({ lang }) {
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {content.formLabels.comment[lang]}
-                </label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">{content.formLabels.comment[lang]}</label>
                 <textarea
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
@@ -221,51 +182,33 @@ export default function Testimonials({ lang }) {
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {testimonials.map((testimonial) => (
+          {testimonials.map((t) => (
             <div
-              key={testimonial.id}
-              className="group bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
+              key={t._id}
+              className="group relative bg-white dark:bg-gray-800 rounded-2xl p-6 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 dark:border-gray-700"
             >
-              {/* Quote Icon */}
               <div className="mb-4">
                 <FaQuoteLeft className="text-3xl text-primary/30" />
               </div>
 
-              {/* Comment */}
-              <p className="text-gray-600 dark:text-gray-300 mb-6 italic">
-                "{testimonial.comment[lang] || testimonial.comment.fr}"
-              </p>
+              <p className="text-gray-600 dark:text-gray-300 mb-6 italic">"{t.commentaire}"</p>
 
-              {/* Rating */}
               <div className="flex mb-4">
                 {[1, 2, 3, 4, 5].map((star) => (
-                  <FaStar
-                    key={star}
-                    className={`text-lg ${
-                      star <= testimonial.rating
-                        ? "text-yellow-400 fill-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                  />
+                  <FaStar key={star} className={`text-lg ${star <= t.note ? "text-yellow-400 fill-yellow-400" : "text-gray-300"}`} />
                 ))}
               </div>
 
-              {/* User Info */}
               <div className="flex items-center pt-4 border-t border-gray-100 dark:border-gray-700">
                 <div className="w-12 h-12 bg-gradient-to-r from-primary to-accent rounded-full flex items-center justify-center text-white font-bold text-lg mr-4">
-                  {testimonial.avatar}
+                  {t.nomClient.split(' ').map(n => n[0]).join('').toUpperCase()}
                 </div>
                 <div>
-                  <h4 className="font-bold text-gray-900 dark:text-white">{testimonial.name}</h4>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {testimonial.role[lang] || testimonial.role.fr}
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{testimonial.date}</p>
+                  <h4 className="font-bold text-gray-900 dark:text-white">{t.nomClient}</h4>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{t.entreprise}</p>
+                  <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">{new Date(t.date).toLocaleDateString()}</p>
                 </div>
               </div>
-
-              {/* Hover Effect */}
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-accent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             </div>
           ))}
         </div>
