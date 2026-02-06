@@ -47,7 +47,6 @@ const cardHoverVariants = {
   hover: { scale: 1.05, y: -10 }
 };
 
-/* ===================== COMPONENT ===================== */
 export default function Portfolio({ lang = "fr" }) {
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -55,7 +54,6 @@ export default function Portfolio({ lang = "fr" }) {
   const [hoveredCard, setHoveredCard] = useState(null);
   const [selectedProject, setSelectedProject] = useState(null);
 
-  /* ===== Fetch API ===== */
   useEffect(() => {
     axios
       .get(API_URL)
@@ -121,7 +119,6 @@ export default function Portfolio({ lang = "fr" }) {
     <section id="portfolio" className="relative py-24 bg-gradient-to-br from-night via-secondary to-primaryDark overflow-hidden">
       <div className="relative z-10 max-w-7xl mx-auto px-4">
 
-        {/* ===== Header ===== */}
         <div className="text-center mb-20">
           <div className="inline-flex items-center px-5 py-2 rounded-full bg-primary/10 border border-primary/30 mb-6">
             <FaRocket className="text-primary mr-2" />
